@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockSense - Operations</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #0f172a; color: #f8fafc; display: flex; min-height: 100vh; }
+    
+    .sidebar { width: 250px; background-color: #1e293b; padding: 24px 16px; display: flex; flex-direction: column; gap: 8px; border-right: 1px solid #334155; }
+    .sidebar h2 { color: #818cf8; font-size: 20px; margin-bottom: 20px; padding-left: 8px; }
+    .sidebar a { color: #94a3b8; text-decoration: none; padding: 12px 16px; border-radius: 8px; font-size: 15px; font-weight: 500; transition: all 0.2s; display: block; }
+    .sidebar a:hover, .sidebar a.active { background-color: #4f46e5; color: #ffffff; }
+    .sidebar-section { font-size: 11px; text-transform: uppercase; color: #64748b; font-weight: 700; margin-top: 16px; margin-bottom: 4px; padding-left: 8px; }
+
+    .main-content { flex: 1; padding: 32px; overflow-y: auto; }
+    .header h1 { font-size: 26px; }
+    .header p { color: #94a3b8; font-size: 14px; margin-top: 4px; margin-bottom: 24px; }
+
+    .tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+    .tab-btn { padding: 8px 16px; background: #1e293b; border: 1px solid #334155; color: #94a3b8; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .tab-btn.active { background: #4f46e5; color: white; border-color: #4f46e5; }
+
+    .card { background-color: #1e293b; border-radius: 12px; border: 1px solid #334155; padding: 24px; margin-bottom: 24px; }
+    .card h3 { font-size: 18px; margin-bottom: 16px; color: #cbd5e1; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr auto; gap: 12px; align-items: end; }
+    .form-group label { display: block; font-size: 12px; color: #94a3b8; margin-bottom: 6px; }
+    .form-group input, .form-group select { width: 100%; padding: 10px 12px; background-color: #0f172a; border: 1px solid #334155; border-radius: 6px; color: #fff; font-size: 14px; }
+    
+    .btn { padding: 10px 20px; background-color: #4f46e5; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    .btn:hover { background-color: #4338ca; }
+
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { padding: 12px 16px; color: #64748b; font-size: 12px; text-transform: uppercase; border-bottom: 1px solid #334155; }
+    td { padding: 14px 16px; color: #e2e8f0; font-size: 14px; border-bottom: 1px solid #334155; }
+
+    .badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; }
+    .badge-Receipt { background: #065f46; color: #34d399; }
+    .badge-Delivery { background: #991b1b; color: #fca5a5; }
+    .badge-Internal { background: #1e40af; color: #93c5fd; }
+    .badge-Adjustment { background: #854d0e; color: #fef08a; }
+
+    #alertBox { padding: 12px; border-radius: 6px; margin-bottom: 16px; display: none; font-size: 14px; }
+    .alert-error { background-color: #7f1d1d; color: #fecaca; }
+    .alert-success { background-color: #064e3b; color: #a7f3d0; }
+  </style>
+</head>
+<body>
+
+  <!-- Left Sidebar -->
+  <div class="sidebar">
+    <h2>StockSense</h2>
+    <a href="/dashboard.html">📊 Dashboard</a>
+    <a href="/products.html">📦 Products</a>
+
+    <div class="sidebar-section">Operations</div>
+    <a href="/operations.html?type=Receipt" id="link-Receipt">📥 Receipts (Incoming)</a>
+    <a href="/operations.html?type=Delivery" id="link-Delivery">📤 Delivery Orders</a>
+    <a href="/operations.html?type=Internal" id="link-Internal">🔄 Internal Transfers</a>
+    <a href="/operations.html?type=Adjustment" id="link-Adjustment">⚖️ Stock Adjustments</a>
+    <a href="/operations.html?type=All" id="link-All">📜 Move History</a>
+  </div>
+
+  <div class="main-content">
+    <div class="header">
+      <h1 id="opTitle">Inventory Operations</h1>
+      <p>Execute movements, transfers, and inventory adjustments</p>
+    </div>
+
+    <!-- Active Filter Tabs -->
+    <div class="tabs">
+      <button class="tab-btn" onclick="setOpType('Receipt')">📥 Receipts</button>
+      <button class="tab-btn" onclick="setOpType('Delivery')">📤 Deliveries</button>
+      <button class="tab-btn" onclick="setOpType('Internal')">🔄 Transfers</button>
+      <button class="tab-btn" onclick="setOpType('Adjustment')">⚖️ Adjustments</button>
+      <button class="tab-btn" onclick="setOpType('All')">📜 Move History</button>
+    </div>
+
+    <div id="alertBox"></div>
+
+    <!-- Operation Action Form -->
+    <div class="card" id="actionFormCard">
+      <h3 id="formTitle">Process Inventory Action</h3>
+      <form id="opForm" class="form-grid">
+        <div class="form-group">
+          <label>Operation Type</label>
+          <select id="opType" onchange="updateFormFields()">
+            <option value="Receipt">Receipt (Stock In)</option>
+            <option value="Delivery">Delivery (Stock Out)</option>
+            <option value="Internal">Internal Transfer</option>
+            <option value="Adjustment">Stock Adjustment</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Product (SKU)</label>
+          <select id="opSku" required></select>
+        </div>
+        <div class="form-group">
+          <label id="qtyLabel">Quantity</label>
+          <input type="number" id="opQty" placeholder="10" required min="1">
+        </div>
+        <div class="form-group">
+          <label>Source Location</label>
+          <input type="text" id="opSource" value="Vendor">
+        </div>
+        <div class="form-group">
+          <label>Destination Location</label>
+          <input type="text" id="opDest" value="Warehouse A">
+        </div>
+        <button type="submit" class="btn">Execute Action</button>
+      </form>
+    </div>
+
+    <!-- History Audit Table -->
+    <div class="card">
+      <h3>Operation Feed / Audit Log</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Product SKU</th>
+            <th>Quantity</th>
+            <th>Source -> Destination</th>
+            <th>Status</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="opTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let currentType = 'Receipt';
+
+    function showAlert(msg, isError = true) {
+      const box = document.getElementById('alertBox');
+      box.textContent = msg;
+      box.className = isError ? 'alert-error' : 'alert-success';
+      box.style.display = 'block';
+      setTimeout(() => box.style.display = 'none', 4000);
+    }
+
+    // Populate SKU dropdown dynamically from /api/products
+    async function loadProductSKUs() {
+      try {
+        const res = await fetch('/api/products');
+        const products = await res.json();
+        const select = document.getElementById('opSku');
+        select.innerHTML = '';
+        products.forEach(p => {
+          select.innerHTML += `<option value="${p.sku}">${p.name} (${p.sku}) [Stock: ${p.stock}]</option>`;
+        });
+      } catch (e) { showAlert('Error loading SKUs'); }
+    }
+
+    function setOpType(type) {
+      currentType = type;
+      
+      // Update sidebar active highlights
+      document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+      const activeLink = document.getElementById(`link-${type}`);
+      if (activeLink) activeLink.classList.add('active');
+
+      // Update Form visibility
+      if (type === 'All') {
+        document.getElementById('actionFormCard').style.display = 'none';
+      } else {
+        document.getElementById('actionFormCard').style.display = 'block';
+        document.getElementById('opType').value = type;
+        updateFormFields();
+      }
+
+      loadOperations();
+    }
+
+    function updateFormFields() {
+      const type = document.getElementById('opType').value;
+      const src = document.getElementById('opSource');
+      const dest = document.getElementById('opDest');
+      const qtyLabel = document.getElementById('qtyLabel');
+
+      if (type === 'Receipt') {
+        src.value = 'Vendor'; dest.value = 'Warehouse A';
+        qtyLabel.textContent = 'Quantity To Add';
+      } else if (type === 'Delivery') {
+        src.value = 'Warehouse A'; dest.value = 'Customer';
+        qtyLabel.textContent = 'Quantity To Dispatch';
+      } else if (type === 'Internal') {
+        src.value = 'Warehouse A'; dest.value = 'Warehouse B';
+        qtyLabel.textContent = 'Quantity To Transfer';
+      } else if (type === 'Adjustment') {
+        src.value = 'Stock Audit'; dest.value = 'System Inventory';
+        qtyLabel.textContent = 'New Total Stock Count';
+      }
+    }
+
+    async function loadOperations() {
+      try {
+        const res = await fetch(`/api/operations?type=${currentType}`);
+        const ops = await res.json();
+        const tbody = document.getElementById('opTableBody');
+        tbody.innerHTML = '';
+
+        if (ops.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:#64748b;">No operation logs found for ${currentType}</td></tr>`;
+          return;
+        }
+
+        ops.forEach(o => {
+          tbody.innerHTML += `
+            <tr>
+              <td><code>${o.reference}</code></td>
+              <td><span class="badge badge-${o.type}">${o.type}</span></td>
+              <td><strong>${o.sku}</strong></td>
+              <td>${o.qty}</td>
+              <td>${o.source} &rarr; ${o.destination}</td>
+              <td style="color:#34d399;">${o.status}</td>
+              <td>${o.date}</td>
+            </tr>
+          `;
+        });
+      } catch (e) { showAlert('Error loading operation logs'); }
+    }
+
+    document.getElementById('opForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        type: document.getElementById('opType').value,
+        sku: document.getElementById('opSku').value,
+        qty: document.getElementById('opQty').value,
+        source: document.getElementById('opSource').value,
+        destination: document.getElementById('opDest').value
+      };
+
+      try {
+        const res = await fetch('/api/operations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (res.ok) {
+          showAlert(data.message, false);
+          loadProductSKUs(); // refresh stock numbers in dropdown
+          loadOperations(); // refresh audit table
+        } else {
+          showAlert(data.error);
+        }
+      } catch (e) { showAlert('Failed to execute operation'); }
+    });
+
+    // Handle URL Parameter on page load (e.g. ?type=Delivery)
+    window.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const urlType = params.get('type') || 'Receipt';
+      loadProductSKUs();
+      setOpType(urlType);
+    });
+  </script>
+</body>
+</html>
