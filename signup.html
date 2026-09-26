@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockSense - Sign Up</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background-color: #f4f6f9; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
+    .card h2 { margin-bottom: 24px; color: #333; text-align: center; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; margin-bottom: 6px; color: #666; font-size: 14px; }
+    .form-group input, .form-group select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 16px; }
+    .form-group input:focus, .form-group select:focus { outline: none; border-color: #4f46e5; }
+    .btn { width: 100%; padding: 12px; background-color: #4f46e5; border: none; color: white; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; transition: background 0.2s; }
+    .btn:hover { background-color: #4338ca; }
+    #error-message { color: #dc2626; font-size: 14px; text-align: center; margin-top: 12px; display: none; }
+    #success-message { color: #16a34a; font-size: 14px; text-align: center; margin-top: 12px; display: none; }
+    .footer-links { margin-top: 16px; text-align: center; font-size: 14px; }
+    .footer-links a { color: #4f46e5; text-decoration: none; }
+    .footer-links a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Create StockSense Account</h2>
+    <form id="signupForm">
+      <div class="form-group">
+        <label for="full_name">Full Name</label>
+        <input type="text" id="full_name" required placeholder="Enter your full name">
+      </div>
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" required placeholder="Enter your email">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" required placeholder="Create a password">
+      </div>
+      <div class="form-group">
+        <label for="role">Role</label>
+        <select id="role">
+          <option value="admin">Admin</option>
+          <option value="manager">Manager</option>
+          <option value="staff">Staff</option>
+        </select>
+      </div>
+      <button type="submit" class="btn">Register</button>
+      <div id="error-message"></div>
+      <div id="success-message"></div>
+    </form>
+    <div class="footer-links">
+      <p>Already have an account? <a href="/pages/login.html">Login here</a></p>
+    </div>
+  </div>
+
+  <script>
+    const signupForm = document.getElementById('signupForm');
+    const errorMessage = document.getElementById('error-message');
+    const successMessage = document.getElementById('success-message');
+
+    signupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errorMessage.style.display = 'none';
+      successMessage.style.display = 'none';
+
+      const full_name = document.getElementById('full_name').value;
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const role = document.getElementById('role').value;
+
+      try {
+        const response = await fetch('http://localhost:5000/api/auth/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ full_name, email, password, role })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          successMessage.textContent = 'Account created successfully! Redirecting to login...';
+          successMessage.style.display = 'block';
+          setTimeout(() => {
+            window.location.href = '/pages/login.html';
+          }, 1500);
+        } else {
+          errorMessage.textContent = data.error || 'Registration failed!';
+          errorMessage.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Signup error:', err);
+        errorMessage.textContent = 'Server connection failed.';
+        errorMessage.style.display = 'block';
+      }
+    });
+  </script>
+
+</body>
+</html>
