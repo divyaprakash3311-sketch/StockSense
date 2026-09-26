@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockSense - Inventory Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 flex min-h-screen">
+
+  <!-- LEFT SIDEBAR NAVIGATION -->
+  <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col justify-between p-4">
+    <div>
+      <div class="mb-8 px-2">
+        <h1 class="text-2xl font-black text-blue-500 tracking-wider">StockSense</h1>
+        <p class="text-xs text-slate-400">Inventory Operations</p>
+      </div>
+
+      <nav class="space-y-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-sm font-semibold">
+          📊 <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📦 <span>Products</span>
+        </a>
+
+        <div class="pt-4 pb-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider px-3">Operations</div>
+        <a href="receipts.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📥 <span>Receipts (Incoming)</span>
+        </a>
+        <a href="deliveries.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📤 <span>Delivery Orders</span>
+        </a>
+        <a href="transfers.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          🔄 <span>Internal Transfers</span>
+        </a>
+        <a href="adjustments.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          ⚖️ <span>Stock Adjustments</span>
+        </a>
+        <a href="history.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📜 <span>Move History</span>
+        </a>
+      </nav>
+    </div>
+
+    <!-- User Profile & Logout -->
+    <div class="border-t border-slate-700 pt-4 px-2">
+      <div class="flex items-center justify-between mb-3">
+        <div>
+          <p id="userNameDisplay" class="text-sm font-bold text-white">Staff User</p>
+          <span id="userRoleBadge" class="text-[10px] bg-slate-700 text-blue-400 px-2 py-0.5 rounded-full font-semibold">Manager</span>
+        </div>
+      </div>
+      <button onclick="logout()" class="w-full text-left flex items-center gap-2 text-xs text-red-400 hover:text-red-300 py-1 transition">
+        🚪 <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN DASHBOARD CONTENT -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-2xl font-bold text-white">Inventory Overview</h2>
+        <p class="text-slate-400 text-sm">Real-time stock analytics and document tracking</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <input type="text" id="skuSearch" placeholder="Quick Search SKU..." class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-lg text-sm text-white focus:outline-none focus:border-blue-500">
+      </div>
+    </div>
+
+    <!-- 1. DASHBOARD KPIS CARDS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+      <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+        <p class="text-xs text-slate-400 font-semibold uppercase">Total In Stock</p>
+        <h3 id="kpiTotalStock" class="text-2xl font-black text-white mt-1">--</h3>
+        <p class="text-[11px] text-emerald-400 mt-1">Across all warehouses</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+        <p class="text-xs text-slate-400 font-semibold uppercase">Low / Out Stock</p>
+        <h3 id="kpiLowStock" class="text-2xl font-black text-rose-500 mt-1">--</h3>
+        <p class="text-[11px] text-rose-400 mt-1">Under reorder rule</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+        <p class="text-xs text-slate-400 font-semibold uppercase">Pending Receipts</p>
+        <h3 id="kpiPendingReceipts" class="text-2xl font-black text-amber-400 mt-1">--</h3>
+        <p class="text-[11px] text-slate-400 mt-1">Vendor shipments</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+        <p class="text-xs text-slate-400 font-semibold uppercase">Pending Deliveries</p>
+        <h3 id="kpiPendingDeliveries" class="text-2xl font-black text-indigo-400 mt-1">--</h3>
+        <p class="text-[11px] text-slate-400 mt-1">Customer dispatches</p>
+      </div>
+
+      <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl">
+        <p class="text-xs text-slate-400 font-semibold uppercase">Internal Transfers</p>
+        <h3 id="kpiTransfersScheduled" class="text-2xl font-black text-teal-400 mt-1">--</h3>
+        <p class="text-[11px] text-slate-400 mt-1">Scheduled movements</p>
+      </div>
+    </div>
+
+    <!-- 2. DYNAMIC FILTERS SECTION -->
+    <div class="bg-slate-800 border border-slate-700 p-5 rounded-xl mb-8">
+      <h4 class="text-sm font-bold text-slate-200 mb-3 uppercase tracking-wider">Dynamic Filters</h4>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Document Type</label>
+          <select id="filterDocType" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="ALL">All Documents</option>
+            <option value="Receipt">Receipts</option>
+            <option value="Delivery">Delivery Orders</option>
+            <option value="Internal">Internal Transfers</option>
+            <option value="Adjustment">Adjustments</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Status</label>
+          <select id="filterStatus" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="ALL">All Statuses</option>
+            <option value="Draft">Draft</option>
+            <option value="Waiting">Waiting</option>
+            <option value="Ready">Ready</option>
+            <option value="Done">Done</option>
+            <option value="Canceled">Canceled</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Warehouse / Location</label>
+          <select id="filterWarehouse" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="ALL">All Locations</option>
+            <option value="Main Store">Main Store</option>
+            <option value="Production Floor">Production Floor</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">Category</label>
+          <select id="filterCategory" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none">
+            <option value="ALL">All Categories</option>
+            <option value="Raw Materials">Raw Materials</option>
+            <option value="Finished Goods">Finished Goods</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. RECENT OPERATIONS TABLE -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden">
+      <div class="px-5 py-4 border-b border-slate-700 flex justify-between items-center">
+        <h3 class="text-base font-bold text-white">Recent Operations Feed</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="bg-slate-900 text-slate-400 text-xs uppercase font-medium">
+            <tr>
+              <th class="px-5 py-3">Reference No</th>
+              <th class="px-5 py-3">Type</th>
+              <th class="px-5 py-3">Source / Destination</th>
+              <th class="px-5 py-3">Status</th>
+              <th class="px-5 py-3">Date</th>
+            </tr>
+          </thead>
+          <tbody id="operationsFeedBody" class="divide-y divide-slate-700 text-slate-300">
+            <tr>
+              <td colspan="5" class="px-5 py-6 text-center text-slate-500">No operations found. Complete your first receipt!</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Check if user is logged in
+    const token = localStorage.getItem('stocksense_token');
+    const user = JSON.parse(localStorage.getItem('stocksense_user') || '{}');
+
+    if (!token) {
+      window.location.href = 'login.html';
+    } else {
+      document.getElementById('userNameDisplay').innerText = user.name || 'User';
+      document.getElementById('userRoleBadge').innerText = user.role || 'Staff';
+    }
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

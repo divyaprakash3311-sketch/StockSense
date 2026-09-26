@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockSense - Products Catalog</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 flex min-h-screen">
+
+  <!-- LEFT SIDEBAR -->
+  <aside class="w-64 bg-slate-800 border-r border-slate-700 flex flex-col justify-between p-4">
+    <div>
+      <div class="mb-8 px-2">
+        <h1 class="text-2xl font-black text-blue-500 tracking-wider">StockSense</h1>
+        <p class="text-xs text-slate-400">Inventory Operations</p>
+      </div>
+      <nav class="space-y-1">
+        <a href="dashboard.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📊 <span>Dashboard</span>
+        </a>
+        <a href="products.html" class="flex items-center gap-3 px-3 py-2 bg-blue-600/20 text-blue-400 rounded-lg text-sm font-semibold">
+          📦 <span>Products</span>
+        </a>
+        <div class="pt-4 pb-1 text-[11px] font-bold text-slate-500 uppercase tracking-wider px-3">Operations</div>
+        <a href="receipts.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📥 <span>Receipts</span>
+        </a>
+        <a href="deliveries.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📤 <span>Delivery Orders</span>
+        </a>
+        <a href="transfers.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          🔄 <span>Internal Transfers</span>
+        </a>
+        <a href="adjustments.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          ⚖️ <span>Stock Adjustments</span>
+        </a>
+        <a href="history.html" class="flex items-center gap-3 px-3 py-2 text-slate-400 hover:bg-slate-700 hover:text-white rounded-lg text-sm font-semibold transition">
+          📜 <span>Move History</span>
+        </a>
+      </nav>
+    </div>
+    <div class="border-t border-slate-700 pt-4 px-2">
+      <button onclick="logout()" class="w-full text-left flex items-center gap-2 text-xs text-red-400 hover:text-red-300 py-1 transition">
+        🚪 <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <h2 class="text-2xl font-bold text-white">Product Management</h2>
+        <p class="text-slate-400 text-sm">Create, monitor SKU, and track stock levels</p>
+      </div>
+      <button onclick="toggleModal(true)" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-sm flex items-center gap-2">
+        ➕ <span>Add New Product</span>
+      </button>
+    </div>
+
+    <!-- PRODUCTS TABLE -->
+    <div class="bg-slate-800 border border-slate-700 rounded-xl overflow-hidden shadow-xl">
+      <table class="w-full text-left text-sm">
+        <thead class="bg-slate-900 text-slate-400 text-xs uppercase font-medium">
+          <tr>
+            <th class="px-5 py-3">Product Name</th>
+            <th class="px-5 py-3">SKU / Code</th>
+            <th class="px-5 py-3">Category</th>
+            <th class="px-5 py-3">Unit</th>
+            <th class="px-5 py-3">Reorder Point</th>
+            <th class="px-5 py-3">Current Stock</th>
+            <th class="px-5 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody id="productsTableBody" class="divide-y divide-slate-700 text-slate-300">
+          <tr>
+            <td colspan="7" class="px-5 py-8 text-center text-slate-500">Loading products...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ADD PRODUCT MODAL -->
+    <div id="productModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+      <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-bold text-white">Create New Product</h3>
+          <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white text-xl">&times;</button>
+        </div>
+
+        <form id="createProductForm" class="space-y-3">
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Product Name</label>
+            <input type="text" id="pName" placeholder="e.g. Steel Rods" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">SKU / Code</label>
+            <input type="text" id="pSku" placeholder="e.g. STL-ROD-01" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Category</label>
+              <input type="text" id="pCategory" placeholder="e.g. Raw Material" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Unit of Measure</label>
+              <input type="text" id="pUom" placeholder="e.g. kg / pcs" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Reorder Point</label>
+              <input type="number" id="pReorder" value="10" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-xs uppercase text-slate-400 font-semibold mb-1">Initial Stock</label>
+              <input type="number" id="pInitialStock" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 font-semibold text-white rounded-lg text-sm mt-4">Save Product</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const token = localStorage.getItem('stocksense_token');
+    if (!token) window.location.href = 'login.html';
+
+    function toggleModal(show) {
+      const modal = document.getElementById('productModal');
+      modal.classList.toggle('hidden', !show);
+      modal.classList.toggle('flex', show);
+    }
+
+    async function loadProducts() {
+      try {
+        const res = await fetch('http://localhost:5000/api/products', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const products = await res.json();
+        const tbody = document.getElementById('productsTableBody');
+
+        if (!products.length) {
+          tbody.innerHTML = `<tr><td colspan="7" class="px-5 py-8 text-center text-slate-500">No products added yet. Click "+ Add New Product" to start!</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = products.map(p => `
+          <tr class="hover:bg-slate-700/40 transition">
+            <td class="px-5 py-3 font-semibold text-white">${p.name}</td>
+            <td class="px-5 py-3 font-mono text-xs text-blue-400">${p.sku}</td>
+            <td class="px-5 py-3 text-slate-300">${p.category}</td>
+            <td class="px-5 py-3 text-slate-400">${p.unit_of_measure}</td>
+            <td class="px-5 py-3 text-slate-300">${p.reorder_level}</td>
+            <td class="px-5 py-3 font-bold ${p.is_low_stock ? 'text-rose-400' : 'text-emerald-400'}">${p.total_stock}</td>
+            <td class="px-5 py-3">
+              <span class="text-xs px-2.5 py-1 rounded-full font-semibold ${p.is_low_stock ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'}">
+                ${p.is_low_stock ? 'Low Stock' : 'Optimal'}
+              </span>
+            </td>
+          </tr>
+        `).join('');
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    document.getElementById('createProductForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const payload = {
+        name: document.getElementById('pName').value,
+        sku: document.getElementById('pSku').value,
+        category_name: document.getElementById('pCategory').value,
+        unit_of_measure: document.getElementById('pUom').value,
+        reorder_level: Number(document.getElementById('pReorder').value),
+        initial_stock: Number(document.getElementById('pInitialStock').value)
+      };
+
+      try {
+        const res = await fetch('http://localhost:5000/api/products', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          toggleModal(false);
+          document.getElementById('createProductForm').reset();
+          loadProducts();
+        }
+      } catch (err) {
+        alert('Error saving product');
+      }
+    });
+
+    function logout() {
+      localStorage.clear();
+      window.location.href = 'login.html';
+    }
+
+    loadProducts();
+  </script>
+</body>
+</html>
